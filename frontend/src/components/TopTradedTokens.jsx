@@ -74,8 +74,9 @@ const TopTradedTokens = () => {
   useEffect(() => {
     fetchData(); // Fetch data on initial mount
 
-    // Set up interval for auto-refresh (e.g., every 40 seconds)
-    const intervalId = setInterval(fetchData, 40000);
+    // Set up interval for auto-refresh (every 5 minutes)
+    const refreshInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const intervalId = setInterval(fetchData, refreshInterval);
 
     // Cleanup function to clear interval on component unmount
     return () => clearInterval(intervalId);
@@ -215,6 +216,7 @@ const styles = {
     borderBottom: '1px solid #dee2e6',
     fontSize: '0.9rem',
     verticalAlign: 'middle',
+    color: '#333',
   },
   tdName: {
     display: 'flex',
@@ -223,6 +225,7 @@ const styles = {
     padding: '12px',
     borderBottom: '1px solid #dee2e6',
     fontSize: '0.9rem',
+    color: '#333',
   },
   tokenIcon: {
     width: '20px',

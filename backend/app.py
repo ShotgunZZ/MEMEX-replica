@@ -68,8 +68,10 @@ def get_top_rated_tokens():
         # 1. Fetch the list of hot pools using the library
         logging.info(f"Fetching hot pools list via dextools-python library ({chain})")
         # Attempt to use get_ranking_hotpools
-        hot_pools_response = dextools.get_ranking_hotpools(chain)
-        hot_pools = hot_pools_response if isinstance(hot_pools_response, list) else []
+        hot_pools_response = dextools.get_ranking_hotpools("ether")
+        hot_pools = hot_pools_response.get("data", [])
+        # hot_pools_response = dextools.get_ranking_hotpools(chain)
+        # hot_pools = hot_pools_response if isinstance(hot_pools_response, list) else []
         logging.info(f"Library returned {len(hot_pools)} hot pools.")
 
         if not hot_pools:
@@ -96,18 +98,20 @@ def get_top_rated_tokens():
             if pool_address:
                 try:
                     logging.info(f"Fetching price details for pool {pool_address} via library")
-                    # Call library function for pool price
-                    price_details = dextools.get_pool_price(chain, pool_address)
+                    price_details_response = dextools.get_pool_price(chain, pool_address)
                     
-                    # --- Map library response fields --- 
-                    price_usd = price_details.get('price') 
-                    change_data['h24'] = price_details.get('variation24h')
-                    change_data['h6'] = price_details.get('variation6h') 
-                    change_data['m5'] = price_details.get('variation5m') 
-                    volume_data['h24'] = price_details.get('volume24h')
-                    volume_data['h6'] = price_details.get('volume6h')
-                    volume_data['m5'] = price_details.get('volume5m')
-                    # -----------------------------------
+                    # --- Correctly Map library response fields --- 
+                    # Access the inner 'data' dictionary
+                    price_data = price_details_response.get('data', {}) if price_details_response else {}
+
+                    price_usd = price_data.get('price') 
+                    change_data['h24'] = price_data.get('variation24h')
+                    change_data['h6'] = price_data.get('variation6h') # Use variation6h for 6h change
+                    change_data['m5'] = price_data.get('variation5m') # Use variation5m for 5m change
+                    volume_data['h24'] = price_data.get('volume24h')
+                    volume_data['h6'] = price_data.get('volume6h')   # Use volume6h for 6h volume
+                    volume_data['m5'] = price_data.get('volume5m')   # Use volume5m for 5m volume
+                    # ----------------------------------------------
 
                 except Exception as price_e:
                     logging.warning(f"Library failed to fetch/process price for pool {pool_address} ({name}): {price_e}")
